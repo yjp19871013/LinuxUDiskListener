@@ -5,12 +5,17 @@
 #include <unistd.h>
 
 #include "../includes/EventParser.h"
+#include "../includes/UDiskEventClient.h"
 
 #define UDISK_PATTERN "(\\w+)@.*?/block/(s\\w{2})/(s\\w{3})"
 #define PORC_MOUNTS_DIR "/proc/mounts"
 #define DEV_DIR "/dev/"
 #define ENENT_TYPE_ADD "add"
 #define ENENT_TYPE_REMOVE "remove"
+#define UN_SERVER_ADDR "/var/udisk_listener.sock"
+
+#define ADD_EVENT_PARSE_COUNT 5
+#define ADD_EVENT_PARSE_SLEEP_SEC 2
 
 typedef struct {
     char *buffer;
@@ -94,8 +99,8 @@ static void *parse_thread(void *arg) {
     char mnt_path[100];
     memset(mnt_path, 0, sizeof(mnt_path));
     if (!strcmp(type, ENENT_TYPE_ADD)) {
-        int count = 5;
-        int sec = 3;
+        int count = ADD_EVENT_PARSE_COUNT;
+        int sec = ADD_EVENT_PARSE_SLEEP_SEC;
 
         while (count--) {
             sleep(sec);
@@ -126,6 +131,23 @@ static void *parse_thread(void *arg) {
         }
     }
 
+    char result[256];
+    memset(result, 0, 256);
+
+    strcat(result, type);
+    strcat(result, " ");
+    strcat(result, dev_path);
+    strcat(result, " ");
+    strcat(result, mnt_path);
+    strcat(result, " ");
+
+    err = send_un(result, strlen(result), UN_SERVER_ADDR);
+    if (err < 0) {
+        printf("send: %s failed\n", result);
+        return NULL;
+    }
+
+    printf("send: %s succeed\n", result);
     return NULL;
 }
 
