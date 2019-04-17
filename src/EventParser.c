@@ -12,7 +12,7 @@
 #define DEV_DIR "/dev/"
 #define ENENT_TYPE_ADD "add"
 #define ENENT_TYPE_REMOVE "remove"
-#define UN_SERVER_ADDR "/var/udisk_listener.sock"
+#define UN_SERVER_ADDR "/home/yjp/go-projects/AdvertisingMachine/bin/udisk_listener.sock"
 
 #define ADD_EVENT_PARSE_COUNT 5
 #define ADD_EVENT_PARSE_SLEEP_SEC 2
@@ -50,12 +50,7 @@ static void *parse_thread(void *arg) {
         return NULL;
     }
 
-    PEVENT_ARGS param = (PEVENT_ARGS)arg;
-
-    EVENT_ARGS event;
-    memcpy(&event, param, sizeof(EVENT_ARGS));
-
-    destroy_event_args(param);
+    PEVENT_ARGS event = (PEVENT_ARGS)arg;
 
     int err = 0;
     regex_t reg;
@@ -64,12 +59,14 @@ static void *parse_thread(void *arg) {
 
     // 正则匹配，查找事件类型和设备文件路径
     if (regcomp(&reg, UDISK_PATTERN, REG_EXTENDED) < 0) {
+        destroy_event_args(event);
         return NULL;
     }
 
-    err = regexec(&reg, event.buffer, nm, pmatch, 0);
+    err = regexec(&reg, event->buffer, nm, pmatch, 0);
     if (0 != err) {
         regfree(&reg);
+        destroy_event_args(event);
         return NULL;
     }
 
@@ -78,11 +75,12 @@ static void *parse_thread(void *arg) {
         int len = pmatch[1].rm_eo - pmatch[1].rm_so;
         if (len < 0) {
             regfree(&reg);
+            destroy_event_args(event);
             return NULL;
         }
         
         memset(type, 0, sizeof(type));
-        memcpy(type, event.buffer + pmatch[1].rm_so, len);
+        memcpy(type, event->buffer + pmatch[1].rm_so, len);
     }
 
     char dev_path[100];
@@ -90,15 +88,17 @@ static void *parse_thread(void *arg) {
         int len = pmatch[3].rm_eo - pmatch[3].rm_so;
         if (len < 0) {
             regfree(&reg);
+            destroy_event_args(event);
             return NULL;
         }
 
         memset(dev_path, 0, sizeof(dev_path));
         strcpy(dev_path, DEV_DIR);
-        memcpy(dev_path + strlen(DEV_DIR), event.buffer + pmatch[3].rm_so, len);
+        memcpy(dev_path + strlen(DEV_DIR), event->buffer + pmatch[3].rm_so, len);
     }
 
     regfree(&reg);
+    destroy_event_args(event);
 
     // 获取挂载路径
     char mnt_path[100];
