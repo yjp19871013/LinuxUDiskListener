@@ -29,7 +29,6 @@ static void close_socket(PUDISK_SOCKET p_socket) {
 PUDISK_SOCKET init_udisk_socket(void)
 {
     struct sockaddr_nl snl;
-    struct epoll_event ev;
     int ret = -1;
 
     PUDISK_SOCKET udisk_socket = malloc(sizeof(UDISK_SOCKET));
@@ -78,6 +77,8 @@ PUDISK_SOCKET init_udisk_socket(void)
         return NULL;
     }
  
+    struct epoll_event ev;
+    memset(&ev, 0, sizeof(struct epoll_event));
     ev.data.fd = udisk_socket->hotplug_sock;   
     ev.events = EPOLLIN;  
     ret = epoll_ctl(udisk_socket->epoll_fd, EPOLL_CTL_ADD, udisk_socket->hotplug_sock, &ev); 

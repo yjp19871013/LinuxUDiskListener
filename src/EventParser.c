@@ -50,7 +50,12 @@ static void *parse_thread(void *arg) {
         return NULL;
     }
 
-    PEVENT_ARGS event = (PEVENT_ARGS)arg;
+    PEVENT_ARGS param = (PEVENT_ARGS)arg;
+
+    EVENT_ARGS event;
+    memcpy(&event, param, sizeof(EVENT_ARGS));
+
+    destroy_event_args(param);
 
     int err = 0;
     regex_t reg;
@@ -62,7 +67,7 @@ static void *parse_thread(void *arg) {
         return NULL;
     }
 
-    err = regexec(&reg, event->buffer, nm, pmatch, 0);
+    err = regexec(&reg, event.buffer, nm, pmatch, 0);
     if (0 != err) {
         regfree(&reg);
         return NULL;
@@ -77,7 +82,7 @@ static void *parse_thread(void *arg) {
         }
         
         memset(type, 0, sizeof(type));
-        memcpy(type, event->buffer + pmatch[1].rm_so, len);
+        memcpy(type, event.buffer + pmatch[1].rm_so, len);
     }
 
     char dev_path[100];
@@ -90,7 +95,7 @@ static void *parse_thread(void *arg) {
 
         memset(dev_path, 0, sizeof(dev_path));
         strcpy(dev_path, DEV_DIR);
-        memcpy(dev_path + strlen(DEV_DIR), event->buffer + pmatch[3].rm_so, len);
+        memcpy(dev_path + strlen(DEV_DIR), event.buffer + pmatch[3].rm_so, len);
     }
 
     regfree(&reg);
@@ -148,6 +153,7 @@ static void *parse_thread(void *arg) {
     }
 
     printf("send: %s succeed\n", result);
+
     return NULL;
 }
 
@@ -162,4 +168,6 @@ void create_parse_detach_thread(char *event, int size) {
 
     pthread_t thread_id;
 	pthread_create(&thread_id, &attr, parse_thread, init_event_args(event, size));
+
+    pthread_attr_destroy(&attr);
 }
