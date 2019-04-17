@@ -14,9 +14,6 @@
 #define ENENT_TYPE_REMOVE "remove"
 #define UN_SERVER_ADDR "/home/yjp/go-projects/AdvertisingMachine/bin/udisk_listener.sock"
 
-#define ADD_EVENT_PARSE_COUNT 5
-#define ADD_EVENT_PARSE_SLEEP_SEC 2
-
 typedef struct {
     char *buffer;
     int size;
@@ -104,12 +101,7 @@ static void *parse_thread(void *arg) {
     char mnt_path[100];
     memset(mnt_path, 0, sizeof(mnt_path));
     if (!strcmp(type, ENENT_TYPE_ADD)) {
-        int count = ADD_EVENT_PARSE_COUNT;
-        int sec = ADD_EVENT_PARSE_SLEEP_SEC;
-
-        while (count--) {
-            sleep(sec);
-
+        while (1) {
             FILE *file = fopen(PORC_MOUNTS_DIR, "r");
             if (NULL == file) {
                 continue;
@@ -133,6 +125,10 @@ static void *parse_thread(void *arg) {
         
             fclose(file);
             file = NULL;
+
+            if (strlen(mnt_path) != 0) {
+                break;
+            }
         }
     }
 
