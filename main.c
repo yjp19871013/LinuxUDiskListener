@@ -4,7 +4,7 @@
 #include <signal.h>
 #include <stdlib.h>
 
-#include "UDiskListener/UDiskListener.h"
+#include "includes/UDiskListener.h"
 
 static int running = 1;
 
@@ -26,7 +26,6 @@ int main(void) {
         continue;
     }
 
-    printf("call stop\n");
     stop(listener);
     destroy_udisk_listener(listener);
 

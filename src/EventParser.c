@@ -4,7 +4,7 @@
 #include <regex.h>
 #include <unistd.h>
 
-#include "EventParser.h"
+#include "../includes/EventParser.h"
 
 #define UDISK_PATTERN "(\\w+)@.*?/block/(s\\w{2})/(s\\w{3})"
 #define PORC_MOUNTS_DIR "/proc/mounts"
