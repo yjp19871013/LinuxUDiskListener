@@ -80,6 +80,10 @@ static void *parse_thread(void *arg) {
         memcpy(type, event->buffer + pmatch[1].rm_so, len);
     }
 
+    if (strcmp(type, ENENT_TYPE_ADD) && strcmp(type, ENENT_TYPE_REMOVE)) {
+        return NULL;
+    }
+
     char dev_path[100];
     if (-1 != pmatch[3].rm_so) {
         int len = pmatch[3].rm_eo - pmatch[3].rm_so;
