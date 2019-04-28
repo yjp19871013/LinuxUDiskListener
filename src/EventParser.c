@@ -7,7 +7,7 @@
 #include "../includes/EventParser.h"
 #include "../includes/UDiskEventClient.h"
 
-#define UDISK_PATTERN "(\\w+)@.*?/block/(s\\w{2})/(s\\w{3})"
+#define UDISK_PATTERN "(\\w+)@.*?/block/(s\\w{2})"
 #define PORC_MOUNTS_DIR "/proc/mounts"
 #define DEV_DIR "/dev/"
 #define ENENT_TYPE_ADD "add"
@@ -51,7 +51,7 @@ static void *parse_thread(void *arg) {
 
     int err = 0;
     regex_t reg;
-    int nm = 4;
+    int nm = 3;
     regmatch_t pmatch[nm];
 
     // 正则匹配，查找事件类型和设备文件路径
@@ -85,8 +85,8 @@ static void *parse_thread(void *arg) {
     }
 
     char dev_path[100];
-    if (-1 != pmatch[3].rm_so) {
-        int len = pmatch[3].rm_eo - pmatch[3].rm_so;
+    if (-1 != pmatch[2].rm_so) {
+        int len = pmatch[2].rm_eo - pmatch[2].rm_so;
         if (len < 0) {
             regfree(&reg);
             destroy_event_args(event);
@@ -95,7 +95,7 @@ static void *parse_thread(void *arg) {
 
         memset(dev_path, 0, sizeof(dev_path));
         strcpy(dev_path, DEV_DIR);
-        memcpy(dev_path + strlen(DEV_DIR), event->buffer + pmatch[3].rm_so, len);
+        memcpy(dev_path + strlen(DEV_DIR), event->buffer + pmatch[2].rm_so, len);
     }
 
     regfree(&reg);
