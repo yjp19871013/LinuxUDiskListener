@@ -12,7 +12,7 @@
 #define DEV_DIR "/dev/"
 #define ENENT_TYPE_ADD "add"
 #define ENENT_TYPE_REMOVE "remove"
-#define UN_SERVER_ADDR "/home/yjp/go-projects/AdvertisingMachine/bin/udisk_listener.sock"
+#define UN_SERVER_ADDR "./udisk_listener.sock"
 
 typedef struct {
     char *buffer;
